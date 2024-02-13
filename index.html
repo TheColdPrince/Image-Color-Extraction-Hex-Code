@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Color Extraction</title>
+<style>
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+}
+
+.container {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h2 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+input[type="file"] {
+    display: block;
+    margin-bottom: 10px;
+}
+
+img#slikaImmediate {
+    max-width: 100%;
+    max-height: 300px;
+    margin-bottom: 10px;
+    position: relative;
+}
+
+.img-overlay {
+    position: absolute;
+    display: none;
+}
+
+.img-overlay:hover {
+    display: block;
+}
+
+.red-dot {
+    width: 10px;
+    height: 10px;
+    background-color: red;
+    border-radius: 50%;
+    position: absolute;
+    pointer-events: none;
+}
+
+/* Get Color Codes from Photos (Beta) */
+.color-picker {
+    margin-top: 20px;
+}
+
+.color-picker p {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+/* Styling for the color code display */
+.color-code {
+    font-size: 14px;
+    color: #333;
+    margin-top: 10px;
+}
+</style>
+
+<div class="container">
+    <h2>Immediate Image Preview</h2>
+    <input type="file" id="uploadImageImmediate" accept="image/*" onchange="loadImageFileImmediate(event)">
+    <br>
+    <img id="slikaImmediate" src="" alt="Preview" style="max-width: 300px; max-height: 300px;">
+    <div class="img-overlay" id="overlay">
+        <div class="red-dot" id="redDot"></div>
+    </div>
+    <hr>
+    <div class="color-picker">
+        <h2>Get Color Codes from Photos (Beta)</h2>
+        <p>Hover over the image to see color information</p>
+        <div id="colorInfo">
+            <p>RGBA: <span id="rgba"></span><br>Hex: <span id="hex"></span></p>
+        </div>
+    </div>
+</div>
+
+<script>
+// For Immediate Image Preview
+function loadImageFileImmediate(event) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+        document.getElementById("slikaImmediate").src = e.target.result;
+        document.getElementById("slikaImmediate").addEventListener("mousemove", showColorInfo);
+    };
+    reader.readAsDataURL(event.target.files[0]);
+}
+
+function showColorInfo(event) {
+    var img = document.getElementById("slikaImmediate");
+    var canvas = document.createElement("canvas");
+    var context = canvas.getContext("2d");
+
+    canvas.width = img.width;
+    canvas.height = img.height;
+    context.drawImage(img, 0, 0, img.width, img.height);
+
+    var x = event.offsetX;
+    var y = event.offsetY;
+    var pixelData = context.getImageData(x, y, 1, 1).data;
+
+    var rgba = "rgba(" + pixelData[0] + ", " + pixelData[1] + ", " + pixelData[2] + ", " + (pixelData[3] / 255).toFixed(2) + ")";
+    var hex = rgbToHex(pixelData[0], pixelData[1], pixelData[2]);
+
+    document.getElementById("rgba").innerText = rgba;
+    document.getElementById("hex").innerText = hex;
+
+    var overlay = document.getElementById('overlay');
+    var redDot = document.getElementById('redDot');
+    overlay.style.left = event.pageX - redDot.offsetWidth / 2 + 'px';
+    overlay.style.top = event.pageY - redDot.offsetHeight / 2 + 'px';
+}
+
+function rgbToHex(r, g, b) {
+    return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+}
+
+function componentToHex(c) {
+    var hex = c.toString(16);
+    return hex.length == 1 ? "0" + hex : hex;
+}
+</script>
+</body>
+</html>
